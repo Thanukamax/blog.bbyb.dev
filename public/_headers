@@ -1,0 +1,15 @@
+# Fingerprinted assets — safe to cache forever
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# HTML pages — always revalidate
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# RSS feed — cache for 1 hour
+/feed.xml
+  Cache-Control: public, max-age=3600

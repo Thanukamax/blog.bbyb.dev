@@ -3,7 +3,11 @@ import mdx from '@astrojs/mdx';
 
 export default defineConfig({
   site: 'https://blog.bbyb.dev',
+  output: 'static',
   integrations: [mdx()],
+  build: {
+    inlineStylesheets: 'auto',
+  },
   markdown: {
     shikiConfig: {
       theme: 'github-dark',
