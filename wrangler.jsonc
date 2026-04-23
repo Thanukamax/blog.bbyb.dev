@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "blog-bbyb-dev",
+  "account_id": "8f0203259905d8923687286c84921e6c",
+  "compatibility_date": "2026-04-23",
+  "assets": {
+    "directory": "./dist",
+  },
+  "routes": [
+    {
+      "pattern": "blog.bbyb.dev",
+      "custom_domain": true,
+    },
+  ],
+}
