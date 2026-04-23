@@ -12,6 +12,7 @@ const blog = defineCollection({
     readTime: z.string(),
     featured: z.boolean().optional().default(false),
     deck: z.string().optional(),
+    heroImage: z.string().optional(),
   }),
 });
 

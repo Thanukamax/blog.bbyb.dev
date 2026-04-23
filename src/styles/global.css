@@ -408,6 +408,7 @@ footer a:hover { color: var(--ink); }
 }
 .art-hero-inner svg { position: relative; width: min(65%, 700px); margin: auto; display: block; padding-top: 6%; }
 .art-hero-cap { font-size: 12px; color: var(--muted); margin-top: 12px; font-style: italic; font-family: var(--serif); }
+.art-hero-img { width: 100%; aspect-ratio: 16/8; object-fit: cover; border-radius: 18px; display: block; }
 
 /* ================================================================
    ARTICLE BODY
