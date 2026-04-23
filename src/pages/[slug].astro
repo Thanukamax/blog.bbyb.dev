@@ -1,0 +1,206 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Nav from '../components/Nav.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({ params: { slug: post.slug }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await post.render();
+
+const allPosts = await getCollection('blog');
+const others = allPosts
+  .filter((p) => p.slug !== post.slug)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+
+function fmtDate(d: Date) {
+  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+---
+
+<BaseLayout
+  title={`${post.data.title} — B3 Engineering`}
+  description={post.data.description}
+>
+  <div class="progress" id="progress"></div>
+
+  <Nav />
+
+  <header class="art-head">
+    <nav class="breadcrumb">
+      <a href="/">Blog</a>
+      <span class="sep">/</span>
+      <span class="current">{post.data.topic}</span>
+    </nav>
+    <div class="art-topic">{post.data.topic}</div>
+    <h1 class="art-title">{post.data.title}</h1>
+    {post.data.deck && <p class="art-deck">{post.data.deck}</p>}
+    <div class="art-byline">
+      <div class="authors">
+        <div class="avatar-stack">
+          {post.data.authorInitials.map((init) => (
+            <div class="avatar">{init}</div>
+          ))}
+        </div>
+        <div class="author-names">
+          <b>{post.data.authors.join(' and ')}</b>
+          {post.data.authorRoles && (
+            <br /><span style="color:var(--muted); font-size:12.5px">{post.data.authorRoles.join(' · ')}</span>
+          )}
+        </div>
+      </div>
+      <span class="meta-dot"></span>
+      <div>{fmtDate(post.data.date)}</div>
+      <span class="meta-dot"></span>
+      <div>{post.data.readTime} read</div>
+    </div>
+  </header>
+
+  <!-- HERO ART -->
+  <figure class="art-hero">
+    <div class="art-hero-inner">
+      <div class="bg"></div>
+      <div class="grid-lines"></div>
+      <svg viewBox="0 0 700 340" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="#ffffff" stop-opacity="0.15"/>
+          </linearGradient>
+          <radialGradient id="g2">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85"/>
+            <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <g stroke="rgba(255,255,255,0.18)" stroke-width="0.8" fill="none">
+          <rect x="60" y="40" width="180" height="110" rx="10"/>
+          <rect x="260" y="40" width="180" height="110" rx="10"/>
+          <rect x="460" y="40" width="180" height="110" rx="10"/>
+          <rect x="60" y="190" width="180" height="110" rx="10"/>
+          <rect x="260" y="190" width="180" height="110" rx="10"/>
+          <rect x="460" y="190" width="180" height="110" rx="10"/>
+        </g>
+        <g fill="rgba(255,255,255,0.35)" font-family="ui-monospace, monospace" font-size="10" letter-spacing="1">
+          <text x="70" y="60">us-east-1</text>
+          <text x="270" y="60">us-west-2</text>
+          <text x="470" y="60">eu-west-1</text>
+          <text x="70" y="210">ap-south-1</text>
+          <text x="270" y="210">ap-northeast</text>
+          <text x="470" y="210">sa-east-1</text>
+        </g>
+        <g fill="#ffffff">
+          <circle cx="150" cy="105" r="5"/><circle cx="350" cy="105" r="5"/><circle cx="550" cy="105" r="5"/>
+          <circle cx="150" cy="255" r="5"/><circle cx="350" cy="255" r="5"/><circle cx="550" cy="255" r="5"/>
+        </g>
+        <g stroke="url(#g1)" stroke-width="0.8" fill="none" opacity="0.65">
+          <path d="M150 105 L350 105 L550 105"/>
+          <path d="M150 255 L350 255 L550 255"/>
+          <path d="M150 105 L150 255"/><path d="M350 105 L350 255"/><path d="M550 105 L550 255"/>
+          <path d="M150 105 L350 255"/><path d="M350 105 L550 255"/><path d="M550 105 L150 255"/>
+        </g>
+        <circle cx="350" cy="180" r="50" fill="url(#g2)"/>
+        <circle cx="350" cy="180" r="4" fill="#fff"/>
+        <text x="350" y="328" fill="rgba(255,255,255,0.4)" font-family="ui-monospace, monospace" font-size="10" text-anchor="middle" letter-spacing="2">GLOBAL DATA PLANE · v3</text>
+      </svg>
+    </div>
+  </figure>
+
+  <!-- BODY + TOC -->
+  <div class="layout">
+    {headings.length > 0 && (
+      <aside class="toc" id="toc">
+        <div class="toc-title">In this article</div>
+        {headings.filter((h) => h.depth <= 2).map((h) => (
+          <a href={`#${h.slug}`}>{h.text}</a>
+        ))}
+      </aside>
+    )}
+
+    <article class="art-body-col">
+      <div class="art-body">
+        <Content />
+      </div>
+    </article>
+
+    <div></div>
+  </div>
+
+  <!-- READ NEXT -->
+  {others.length > 0 && (
+    <section class="read-next">
+      <div class="rn-head">
+        <h4>Read Next</h4>
+        <a href="/">All articles →</a>
+      </div>
+      <div class="rn-grid">
+        {others.map((p) => (
+          <article class="rn-card reveal" onclick={`location.href='/${p.slug}'`}>
+            <div class="rn-topic">{p.data.topic}</div>
+            <h5>{p.data.title}</h5>
+            <div class="rn-meta">{p.data.authors[0]} · {p.data.readTime}</div>
+          </article>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <section class="subscribe-slim">
+    <div>
+      <h4>New articles, delivered quietly.</h4>
+      <p>No email. No tracking. Just a feed.</p>
+    </div>
+    <a class="btn-rss" href="/feed.xml">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6.18 17.82A2.18 2.18 0 1 1 4 20a2.18 2.18 0 0 1 2.18-2.18zM4 11.03v3.01c3.6 0 6.53 2.93 6.53 6.53h3.01c0-5.27-4.27-9.54-9.54-9.54zm0-6.02V8c7.74 0 14 6.26 14 14h3c0-9.4-7.6-17-17-17z"/>
+      </svg>
+      Subscribe via RSS
+    </a>
+  </section>
+
+  <footer>
+    <div>© {new Date().getFullYear()} B3 Engineering.</div>
+  </footer>
+</BaseLayout>
+
+<script>
+  // Reading progress
+  const progress = document.getElementById('progress');
+  function updateProgress() {
+    const h = document.documentElement;
+    const pct = h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight);
+    if (progress) progress.style.width = (pct * 100) + '%';
+  }
+  document.addEventListener('scroll', updateProgress);
+  updateProgress();
+
+  // TOC active state
+  const tocLinks = document.querySelectorAll<HTMLAnchorElement>('.toc a');
+  const sections = [...tocLinks]
+    .map((a) => document.getElementById(a.getAttribute('href')!.slice(1)))
+    .filter(Boolean) as HTMLElement[];
+
+  if (sections.length > 0) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          tocLinks.forEach((l) => l.classList.remove('active'));
+          const link = document.querySelector<HTMLElement>(`.toc a[href="#${e.target.id}"]`);
+          link?.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-30% 0% -55% 0%' });
+    sections.forEach((s) => io.observe(s));
+  }
+
+  // Reveal
+  const rio = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) { e.target.classList.add('in'); rio.unobserve(e.target); }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach((el) => rio.observe(el));
+</script>

@@ -1,0 +1,162 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Nav from '../components/Nav.astro';
+import { getThumb } from '../utils/thumbs';
+
+const allPosts = await getCollection('blog');
+const posts = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const featured = posts.find((p) => p.data.featured) ?? posts[0];
+const listPosts = posts.filter((p) => p.slug !== featured?.slug);
+
+function fmtDate(d: Date) {
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+---
+
+<BaseLayout>
+  <Nav />
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="eyebrow">The B3 Engineering Blog</div>
+    <h1>Precision engineering, <em>one bit at a time.</em></h1>
+    <p class="hero-sub">
+      Notes from the teams building B3 — on the systems, decisions, and trade-offs behind the
+      product. Deep dives on distributed infrastructure, performance, tooling, and the craft of
+      shipping reliable software.
+    </p>
+    <div class="hero-meta">
+      <div><b>{posts.length}</b> articles</div>
+      <div>Updated weekly</div>
+      <div>
+        <a href="/feed.xml" style="color:var(--ink-2); text-decoration:underline; text-underline-offset:3px; text-decoration-color:var(--line);">
+          Subscribe via RSS →
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- FEATURED -->
+  {featured && (
+    <section class="featured">
+      <a class="featured-card reveal" href={`/${featured.slug}`}>
+        <div class="featured-art">
+          <div class="bg"></div>
+          <div class="grid-lines"></div>
+          <svg class="orbit" viewBox="0 0 600 320" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.6"/>
+                <stop offset="100%" stop-color="#ffffff" stop-opacity="0.15"/>
+              </linearGradient>
+              <radialGradient id="g2">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85"/>
+                <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <circle cx="300" cy="160" r="140" stroke="url(#g1)" stroke-width="1" opacity="0.5"/>
+            <circle cx="300" cy="160" r="100" stroke="url(#g1)" stroke-width="1" opacity="0.4"/>
+            <circle cx="300" cy="160" r="60" stroke="url(#g1)" stroke-width="1" opacity="0.35"/>
+            <path d="M60 80 L220 140 L380 90 L540 170 L300 280 L60 80" stroke="#ffffff" stroke-width="0.8" opacity="0.3" fill="none"/>
+            <path d="M100 220 Q 300 40 520 230" stroke="#ffffff" stroke-width="0.6" opacity="0.35" fill="none"/>
+            <circle cx="60" cy="80" r="4" fill="#ffffff" opacity="0.8"/>
+            <circle cx="220" cy="140" r="6" fill="#ffffff"/>
+            <circle cx="380" cy="90" r="5" fill="#ffffff" opacity="0.85"/>
+            <circle cx="540" cy="170" r="4" fill="#ffffff" opacity="0.8"/>
+            <circle cx="300" cy="280" r="5" fill="#ffffff" opacity="0.85"/>
+            <circle cx="300" cy="160" r="10" fill="url(#g2)"/>
+            <circle cx="300" cy="160" r="3.5" fill="#fff"/>
+          </svg>
+        </div>
+        <div class="featured-caption">
+          <div class="featured-tag">Featured · {featured.data.topic}</div>
+          <h2>{featured.data.title}</h2>
+          <div class="featured-meta">
+            <span>{featured.data.authors.join(' & ')}</span>
+            <span class="dot"></span>
+            <span>{fmtDate(featured.data.date)}</span>
+            <span class="dot"></span>
+            <span>{featured.data.readTime} read</span>
+          </div>
+        </div>
+      </a>
+    </section>
+  )}
+
+  <!-- LATEST LIST -->
+  <div class="section-head">
+    <h3>Latest Articles</h3>
+    <span class="count">— {String(listPosts.length).padStart(2, '0')}</span>
+  </div>
+
+  <section class="posts">
+    {listPosts.map((post, i) => (
+      <article class="post" onclick={`location.href='/${post.slug}'`}>
+        <div class="post-thumb">
+          <Fragment set:html={getThumb(post.data.topic)} />
+          <span class="num">{String(i + 1).padStart(2, '0')} —</span>
+          <span class="tag">{post.data.topic}</span>
+        </div>
+        <div class="post-main">
+          <div class="post-topic">{post.data.topic}</div>
+          <h3 class="post-title">{post.data.title}</h3>
+          <p class="post-desc">{post.data.description}</p>
+          <div class="post-meta-row">
+            <div class="avatar">{post.data.authorInitials[0]}</div>
+            <b>{post.data.authors[0]}</b>
+            <span class="dot"></span>
+            <span>{post.data.authorRoles?.[0] ?? ''}</span>
+          </div>
+        </div>
+        <div class="post-date">
+          {fmtDate(post.data.date)}
+          <span class="read">{post.data.readTime}</span>
+        </div>
+      </article>
+    ))}
+  </section>
+
+  <!-- SUBSCRIBE -->
+  <section class="subscribe reveal">
+    <div>
+      <h4>Stay close to the craft.</h4>
+      <p>Follow the blog via RSS — no email, no tracking. New articles appear in your reader the moment they publish.</p>
+    </div>
+    <div class="subscribe-actions">
+      <a class="btn-rss" href="/feed.xml">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6.18 17.82A2.18 2.18 0 1 1 4 20a2.18 2.18 0 0 1 2.18-2.18zM4 11.03v3.01c3.6 0 6.53 2.93 6.53 6.53h3.01c0-5.27-4.27-9.54-9.54-9.54zm0-6.02V8c7.74 0 14 6.26 14 14h3c0-9.4-7.6-17-17-17z"/>
+        </svg>
+        Subscribe via RSS
+      </a>
+      <button class="btn-ghost" id="copy-feed">Copy feed URL</button>
+    </div>
+  </section>
+
+  <footer>
+    <div>© {new Date().getFullYear()} B3 Engineering.</div>
+  </footer>
+</BaseLayout>
+
+<script>
+  // Reveal on scroll
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+
+  // Copy feed URL
+  const copyBtn = document.getElementById('copy-feed');
+  copyBtn?.addEventListener('click', () => {
+    navigator.clipboard.writeText('https://blog.bbyb.dev/feed.xml').then(() => {
+      if (copyBtn) {
+        const orig = copyBtn.textContent;
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.textContent = orig; }, 1800);
+      }
+    });
+  });
+</script>

@@ -1,0 +1,44 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'B3 Engineering — Blog',
+  description = 'Precision engineering, one bit at a time. Notes from the teams building B3.',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="alternate" type="application/rss+xml" title="B3 Engineering RSS" href="/feed.xml" />
+  <link rel="icon" href="/assets/logo-dark.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Inter:wght@400;450;500;600;700&family=Unbounded:wght@900&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+  <script is:inline>
+    (function () {
+      try {
+        const t = localStorage.getItem('b3-theme');
+        if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
+        else if (window.matchMedia('(prefers-color-scheme: dark)').matches)
+          document.documentElement.dataset.theme = 'dark';
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+  <slot />
+</body>
+</html>
