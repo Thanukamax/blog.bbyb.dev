@@ -42,32 +42,11 @@ function fmtDate(d: Date) {
     <section class="featured">
       <a class="featured-card reveal" href={`/${featured.slug}`}>
         <div class="featured-art">
-          <div class="bg"></div>
-          <div class="grid-lines"></div>
-          <svg class="orbit" viewBox="0 0 600 320" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <defs>
-              <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.6"/>
-                <stop offset="100%" stop-color="#ffffff" stop-opacity="0.15"/>
-              </linearGradient>
-              <radialGradient id="g2">
-                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85"/>
-                <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
-              </radialGradient>
-            </defs>
-            <circle cx="300" cy="160" r="140" stroke="url(#g1)" stroke-width="1" opacity="0.5"/>
-            <circle cx="300" cy="160" r="100" stroke="url(#g1)" stroke-width="1" opacity="0.4"/>
-            <circle cx="300" cy="160" r="60" stroke="url(#g1)" stroke-width="1" opacity="0.35"/>
-            <path d="M60 80 L220 140 L380 90 L540 170 L300 280 L60 80" stroke="#ffffff" stroke-width="0.8" opacity="0.3" fill="none"/>
-            <path d="M100 220 Q 300 40 520 230" stroke="#ffffff" stroke-width="0.6" opacity="0.35" fill="none"/>
-            <circle cx="60" cy="80" r="4" fill="#ffffff" opacity="0.8"/>
-            <circle cx="220" cy="140" r="6" fill="#ffffff"/>
-            <circle cx="380" cy="90" r="5" fill="#ffffff" opacity="0.85"/>
-            <circle cx="540" cy="170" r="4" fill="#ffffff" opacity="0.8"/>
-            <circle cx="300" cy="280" r="5" fill="#ffffff" opacity="0.85"/>
-            <circle cx="300" cy="160" r="10" fill="url(#g2)"/>
-            <circle cx="300" cy="160" r="3.5" fill="#fff"/>
-          </svg>
+          {featured.data.heroImage ? (
+            <img src={featured.data.heroImage} alt="" class="featured-img" loading="eager" />
+          ) : (
+            <Fragment set:html={getThumb(featured.data.topic)} />
+          )}
         </div>
         <div class="featured-caption">
           <div class="featured-tag">Featured · {featured.data.topic}</div>
@@ -94,7 +73,11 @@ function fmtDate(d: Date) {
     {listPosts.map((post, i) => (
       <article class="post" onclick={`location.href='/${post.slug}'`}>
         <div class="post-thumb">
-          <Fragment set:html={getThumb(post.data.topic)} />
+          {post.data.heroImage ? (
+            <img src={post.data.heroImage} alt="" class="post-thumb-img" loading="lazy" />
+          ) : (
+            <Fragment set:html={getThumb(post.data.topic)} />
+          )}
           <span class="num">{String(i + 1).padStart(2, '0')} —</span>
           <span class="tag">{post.data.topic}</span>
         </div>
