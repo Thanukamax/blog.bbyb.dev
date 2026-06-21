@@ -9,7 +9,7 @@ date: 2026-06-21
 readTime: "9 min"
 featured: false
 deck: "Drizzle's cache layer ships with Redis/Upstash. On Workers and D1, we wanted to reuse the KV namespace we already had — so we built and open-sourced a Cloudflare KV cache adapter, and we're committing to maintaining it."
-heroImage: "/assets/drizzle-kv.png"
+heroImage: "/assets/drizzle-kv-hero.png"
 ---
 
 <p class="lede">Drizzle ORM has first-party query caching. You opt in with <code>.$withCache()</code>, mutations auto-invalidate, and the whole thing is backed by a pluggable cache interface. The one adapter that ships in the box talks to Redis or Upstash. That's a perfectly good default — unless you're already all-in on Cloudflare, in which case standing up a Redis instance just to cache a handful of read-heavy queries feels like adding a moving part you didn't need.</p>
