@@ -1,6 +1,6 @@
 ---
 title: "We wanted Drizzle query caching on Cloudflare without Redis. So we built the KV adapter ourselves."
-description: "Drizzle's cache layer ships with a Redis/Upstash adapter, but on Workers and D1 you rarely want to stand up Redis just to cache a few hot queries. We opened an upstream request, it sat, so we built and open-sourced a Cloudflare KV cache adapter — here's how it works and why we're committing to maintaining it."
+description: "Drizzle's cache layer ships with a Redis/Upstash adapter, but on Workers and D1 you rarely want to stand up Redis just to cache a few hot queries. So we built and open-sourced a Cloudflare KV cache adapter on top of Drizzle's pluggable cache interface — here's how it works and why we're committing to maintaining it."
 topic: "Infrastructure"
 authors: ["Thanuka Sehasna Perera", "Ranuga Disansa"]
 authorInitials: ["TP", "RD"]
@@ -18,11 +18,11 @@ We kept hitting that wall across our own projects. Workers and D1 apps where the
 
 So we did, and then we open-sourced the result: [`drizzle-cloudflare-kv-cache-adapter`](https://github.com/BitByBit-B3/drizzle-cloudflare-kv-cache-adapter).
 
-## The part where we asked nicely first
+## Where this started
 
-This didn't start as a "build our own" decision. It started as a feature request. In May we opened [drizzle-team/drizzle-orm#5758](https://github.com/drizzle-team/drizzle-orm/issues/5758) asking for a first-party Cloudflare KV cache adapter alongside the existing `upstashCache()` — the argument being that Cloudflare-native apps shouldn't have to pull in an external Redis dependency just to use a caching feature Drizzle already supports.[^1]
+This didn't start as a "build our own" decision. It started as a note-to-self in the form of a feature request. In May we opened [drizzle-team/drizzle-orm#5758](https://github.com/drizzle-team/drizzle-orm/issues/5758) floating the idea of a first-party Cloudflare KV cache adapter alongside the existing `upstashCache()` — the thinking being that Cloudflare-native apps shouldn't have to pull in an external Redis dependency just to use a caching feature Drizzle already supports.[^1] We mention it here mostly as a reference point: it's where the idea is written down, and it's a credit to Drizzle's design that the cache layer is pluggable enough to make this approachable in the first place.
 
-It's a reasonable ask, and we still think a first-party adapter would be great. But Drizzle's maintainers have a lot on their plate, the issue didn't get picked up, and we needed the thing working in production now, not eventually. The nice part about a pluggable cache interface is that you don't have to wait for upstream — the extension point is public. So rather than keep blocking on the issue, we wrote the adapter against Drizzle's `Cache` base class and shipped it as a standalone package.
+We could have taken a run at it as an upstream PR. We chose not to — and that's on us, not on Drizzle. Adding a Cloudflare-specific adapter to a database-agnostic ORM is a real design decision: it touches their release cadence, their support surface, and trade-offs that are rightly theirs to own. A standalone package let us move at our own pace, iterate on the KV-specific details, and keep the maintenance on our plate rather than theirs. And because the cache interface is a public extension point, we didn't need to be in core to do it properly — so we wrote the adapter against Drizzle's `Cache` base class and shipped it as its own package.
 
 To be clear about what this is: it is **not** a fork of Drizzle and **not** a database driver. It implements exactly one thing — Drizzle's query cache layer (`.$withCache()` and `db.$cache.invalidate(...)`) — and nothing else.[^2]
 
@@ -95,9 +95,9 @@ It would have been easy to leave this as an internal `lib/` file copied between 
 
 The first is selfish and practical: this adapter is now in the request path of several of our own Workers/D1 apps. We are the first people who get paged if it's wrong, so it gets tests, a CI gate (typecheck, test, build on every PR), semver, and a changelog regardless of whether anyone else ever installs it. Open-sourcing it doesn't add much overhead on top of the bar we already had to hold it to internally.
 
-The second is that the gap we hit is not ours alone. Every team building Drizzle-on-Cloudflare runs into the same "do I really need Redis for this?" question. The upstream issue exists precisely because that need is real and currently unmet first-party. Until that changes, an independent adapter that's actually maintained is more useful to the ecosystem than a clever gist that bit-rots in six months. So we're committing to keeping this one current with Drizzle's cache interface and stable for the long run — it's an open-source initiative from our side, not a one-off dump.
+The second is that the need we hit is not ours alone. Every team building Drizzle-on-Cloudflare runs into the same "do I really need Redis for this?" question, and right now there's no first-party answer for it — which is a perfectly reasonable place for an ORM to draw its scope. That's exactly the kind of niche an external adapter is good at filling, so long as it's actually maintained rather than a clever gist that bit-rots in six months. So we're committing to keeping this one current with Drizzle's cache interface and stable for the long run — it's an open-source initiative from our side, not a one-off dump.
 
-If a first-party Cloudflare KV adapter eventually lands in Drizzle, wonderful — we'll happily help people migrate to it. Until then, this is the boring, tested, documented version of the thing you were about to write yourself.
+If a first-party Cloudflare KV adapter ever lands in Drizzle, wonderful — we'll happily help people migrate to it. Until then, this is the boring, tested, documented version of the thing you were about to write yourself.
 
 It's MIT-licensed, on [npm](https://www.npmjs.com/package/drizzle-cloudflare-kv-cache-adapter), and the full docs — setup, strategies, the invalidation model, the API reference — live at [drizzle-kv-cache.bbyb.dev](https://drizzle-kv-cache.bbyb.dev). Issues and PRs are genuinely welcome.
 
