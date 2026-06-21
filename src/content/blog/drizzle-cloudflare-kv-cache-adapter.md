@@ -85,7 +85,7 @@ await db.$cache.invalidate({ tables: ['users', 'posts'] })
 
 We'd rather you hit the limits in our README than in production, so here they are plainly.
 
-KV is **eventually consistent**. A key you just invalidated may serve a stale value in another region for a short window while the change propagates. KV also enforces a **60-second minimum TTL** — the adapter clamps anything lower rather than pretending sub-minute freshness is on the table. And invalidation is **table-scoped, not row-scoped**: mutating one row in `users` drops every cached query that reads `users`. That keeps the logic cheap and correct at the cost of some over-invalidation on hot tables.
+KV is **eventually consistent**. A key you just invalidated may serve a stale value in another region for a short window while the change propagates. KV also enforces a **60-second minimum on key expiration** — the only TTL the adapter sets is each entry's `expirationTtl`, so it clamps anything lower rather than pretending sub-minute freshness is on the table. And invalidation is **table-scoped, not row-scoped**: mutating one row in `users` drops every cached query that reads `users`. That keeps the logic cheap and correct at the cost of some over-invalidation on hot tables.
 
 The reverse index is best-effort and uses last-write-wins, so under heavy concurrent writes to the same table a racing index update can miss an entry. TTLs are the backstop: even a missed entry expires on its own, so the cache can't leak stale data indefinitely. The short version of all of this: KV is the right home for read-heavy data that tolerates brief staleness — config, catalogs, public profiles — and the wrong home for read-after-write strong consistency. We say so in the docs too.[^4]
 
